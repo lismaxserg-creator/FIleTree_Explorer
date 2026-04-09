@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, ReactElement } from 'react'
 
-function App() {
+function App(): ReactElement {
   const [count, setCount] = useState(0)
 
   return (
