@@ -1,16 +1,17 @@
-import { useState, ReactElement } from 'react'
+
+import type { ReactElement } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import HomePage from './pages/HomePage'
+import TreePage from './pages/TreePage'
+import NodePage from './pages/NodePage'
 
 function App(): ReactElement {
-  const [count, setCount] = useState(0)
-
   return (
-    <div>
-      <h1>My first FileTree Explorer app</h1>
-      <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
-    </div>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/tree" element={<TreePage />} />
+      <Route path="/tree/*" element={<NodePage />} />
+    </Routes>
   )
 }
 
