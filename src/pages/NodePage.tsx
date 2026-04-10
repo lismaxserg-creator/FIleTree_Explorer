@@ -1,7 +1,79 @@
+/**
+ * NodePage component - displays detailed information about a specific node in the file tree.
+ * Shows metadata like name, path, size, and for folders - children list.
+ * Allows navigation back to the tree view.
+ */
 import { Link, useParams } from 'react-router-dom';
 import { loadTree } from '../utils/storage';
 import { calculateFolderSize, findNodeByPath, formatBytes, isFolder } from '../utils/tree';
 import { ReactElement } from 'react';
+import styled from 'styled-components';
+import { Panel, PrimaryLink, SectionTitle, Title, mutedText } from '../styles/primitives';
+
+const EmptyState = styled(Panel)`
+  padding: 28px;
+`;
+
+const DetailsPanel = styled(Panel)`
+  padding: 28px;
+`;
+
+const DetailsGrid = styled.dl`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+
+  > div {
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  dt {
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    ${mutedText}
+  }
+
+  dd {
+    margin: 0;
+    word-break: break-word;
+    ${mutedText}
+  }
+
+  @media (max-width: 920px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ChildrenList = styled.div`
+  margin-top: 20px;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+`;
 
 export default function NodePage(): ReactElement {
   const { nodePath } = useParams();
@@ -9,13 +81,13 @@ export default function NodePage(): ReactElement {
 
   if (!tree || !nodePath) {
     return (
-      <section className="panel empty-state">
-        <h2>Nothing to show</h2>
+      <EmptyState>
+        <Title>Nothing to show</Title>
         <p>The tree is missing or the path is invalid.</p>
-        <Link className="primary inline" to="/">
+        <PrimaryLink to="/">
           Import JSON
-        </Link>
-      </section>
+        </PrimaryLink>
+      </EmptyState>
     );
   }
 
@@ -24,13 +96,13 @@ export default function NodePage(): ReactElement {
 
   if (!node) {
     return (
-      <section className="panel empty-state">
-        <h2>Node not found</h2>
+      <EmptyState>
+        <Title>Node not found</Title>
         <p>No node matches the path <code>{decodedPath}</code>.</p>
-        <Link className="primary inline" to="/tree">
+        <PrimaryLink to="/tree">
           Back to tree
-        </Link>
-      </section>
+        </PrimaryLink>
+      </EmptyState>
     );
   }
 
@@ -38,17 +110,17 @@ export default function NodePage(): ReactElement {
   const parentPath = pathSegments.slice(0, -1).join('/');
 
   return (
-    <section className="panel details">
-      <div className="section-title">
-        <h2>{isFolder(node) ? 'Folder details' : 'File details'}</h2>
+    <DetailsPanel>
+      <SectionTitle>
+        <Title>{isFolder(node) ? 'Folder details' : 'File details'}</Title>
         <p>
-          <Link to="/tree">Tree</Link>
+          <Link to="/tree">◀ Tree</Link>
           {' / '}
           <code>{decodedPath}</code>
         </p>
-      </div>
+      </SectionTitle>
 
-      <dl className="details-grid">
+      <DetailsGrid>
         <div>
           <dt>Name</dt>
           <dd>{node.name}</dd>
@@ -77,10 +149,10 @@ export default function NodePage(): ReactElement {
             <dd>{formatBytes(node.size)}</dd>
           </div>
         )}
-      </dl>
+      </DetailsGrid>
 
       {isFolder(node) ? (
-        <div className="children-list">
+        <ChildrenList>
           <h3>Children</h3>
           <ul>
             {node.children.map((child) => {
@@ -94,8 +166,8 @@ export default function NodePage(): ReactElement {
               );
             })}
           </ul>
-        </div>
+        </ChildrenList>
       ) : null}
-    </section>
+    </DetailsPanel>
   );
 }

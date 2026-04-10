@@ -15,6 +15,7 @@ npm install && npm run dev
 - Search state is stored in the URL query string, so search results also survive refreshes and are shareable.
 - The app uses a simple recursive tree model and helper functions for path lookup, indexing, and size calculations.
 - Routing is handled with React Routerv6 and the app keeps a single layout shell for all views.
+- Styled-components was chosen for styling to enable component-scoped CSS, props-based conditional styling, and improved maintainability compared to global CSS files.
 
 ## What I would do with more time
 

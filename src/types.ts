@@ -1,5 +1,6 @@
 export type FileTreeNode = FileNode | FolderNode;
 
+// Base interface for all tree nodes, containing common properties.
 export interface BaseNode {
   name: string;
   type: 'file' | 'folder';

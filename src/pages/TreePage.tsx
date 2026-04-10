@@ -1,49 +1,93 @@
+/**
+ * TreePage component - displays the file tree with search functionality.
+ * Allows users to explore the loaded file tree, search by name or path,
+ * and navigate to individual nodes.
+ */
+
 import { ReactElement, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import type { FileTreeNode } from '../types';
 import { loadTree } from '../utils/storage';
-import { isFolder, searchTree } from '../utils/tree';
+import { searchTree } from '../utils/tree';
 import TreeNodeView from '../components/TreeNodeView';
 import SearchResults from '../components/SearchResults';
+import styled from 'styled-components';
+import { Panel, PrimaryLink, SectionTitle, Title } from '../styles/primitives';
+
+const EmptyState = styled(Panel)`
+  padding: 28px;
+`;
+
+const TreeLayout = styled.section`
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 20px;
+
+  @media (max-width: 920px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Sidebar = styled(Panel).attrs({ as: 'aside' })`
+  padding: 28px;
+`;
+
+const TreePanel = styled(Panel)`
+  padding: 28px;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(3, 9, 18, 0.84);
+  color: #eff4ff;
+`;
+
+const TreeRoot = styled.div`
+  display: grid;
+  gap: 6px;
+`;
 
 export default function TreePage(): ReactElement {
   const [tree, setTree] = useState<FileTreeNode | null>(() => loadTree());
   const [params, setParams] = useSearchParams();
-  const query = params.get('q') ?? '';
+  const query = params.get('q') || '';
 
   useEffect(() => {
     setTree(loadTree());
   }, []);
 
   const results = useMemo(() => {
-    if (!tree) return [];
+    if (!tree) {
+      return [];
+    }
     return searchTree(tree, query);
   }, [tree, query]);
 
-  const isSearching = query.trim().length > 0;
-
   if (!tree) {
     return (
-      <section className="panel empty-state">
-        <h2>No tree loaded yet</h2>
+      <EmptyState>
+        <Title>No tree loaded yet</Title>
         <p>Go back to the import screen and paste or upload a JSON file first.</p>
-        <Link className="primary inline" to="/">
+        <PrimaryLink to="/">
           Import JSON
-        </Link>
-      </section>
+        </PrimaryLink>
+      </EmptyState>
     );
   }
 
   return (
-    <section className="tree-layout">
-      <aside className="panel sidebar">
-        <div className="section-title">
-          <h2>Search</h2>
+    <TreeLayout>
+      <Sidebar>
+        <SectionTitle>
+          <Title>Search</Title>
           <p>Matches name or full path across the entire tree.</p>
-        </div>
+        </SectionTitle>
 
-        <input
-          className="search-input"
+        <SearchInput
           type="search"
           placeholder="Search by name or path"
           value={query}
@@ -51,24 +95,19 @@ export default function TreePage(): ReactElement {
         />
 
         <SearchResults results={results} />
-      </aside>
+      </Sidebar>
 
-      <div className="panel tree-panel">
-        <div className="section-title">
-          <h2>Tree view</h2>
+      <TreePanel>
+        <SectionTitle>
+          <Title>Tree view</Title>
           <p>Expand folders, or open any node for detailed metadata.</p>
-        </div>
+        </SectionTitle>
 
-        <div className="tree-root">
+        <TreeRoot>
           <TreeNodeView node={tree} path={tree.name} depth={0} />
-        </div>
+        </TreeRoot>
 
-        {isFolder(tree) ? (
-          <div className="tree-summary">
-            <span>{tree.children.length} direct children</span>
-          </div>
-        ) : null}
-      </div>
-    </section>
+      </TreePanel>
+    </TreeLayout>
   );
 }
